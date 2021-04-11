@@ -1,16 +1,34 @@
 <template>
-  <img alt="Vue logo" src="./assets/logo.png">
-  <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+  <pickup-recipe-vue v-bind:idList="craftingBag" />
+  <button v-on:click="addHeart">Add heart</button>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
-import HelloWorld from './components/HelloWorld.vue';
+import PickupIcon from "./components/PickupIcon.vue";
+import PickupRecipeVue from './components/PickupRecipe.vue';
 
 export default defineComponent({
   name: 'App',
   components: {
-    HelloWorld
+    PickupRecipeVue
+  },
+
+  data() {
+    return {
+      craftingBag: [] as number[]
+    }
+  },
+
+  methods: {
+    addHeart() {
+      this.craftingBag = [...this.craftingBag, 1]
+      console.log(`${this.craftingBag}`)
+    },
+
+    resetBag() {
+      this.craftingBag = [];
+    }
   }
 });
 </script>
