@@ -3,7 +3,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent, watch } from 'vue';
 
 export default defineComponent({
   name: 'PickupIcon',
@@ -11,15 +11,21 @@ export default defineComponent({
     idx: Number
   },
   data() {
-    let x = (this.idx ?? 0) % 8, y = Math.floor((this.idx ?? 0) / 8);
     return {
       pickupIconStyle: {
         backgroundImage: `url(${require('@/assets/ui_crafting.png')})`,
         width: "16px",
         height: "16px",
-        backgroundPosition: `-${x * 16}px -${y * 16}px`,
+        backgroundPosition: `0px 0px`,
         float: "left",
       }
+    }
+  },
+
+  watch: {
+    idx(val) {
+      let x = val % 8, y = Math.floor(val / 8);
+      this.pickupIconStyle.backgroundPosition = `-${x * 16}px -${y * 16}px`;
     }
   }
 });

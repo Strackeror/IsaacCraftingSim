@@ -1,6 +1,8 @@
 <template>
   <pickup-recipe-vue v-bind:idList="craftingBag" />
   <button v-on:click="addHeart">Add heart</button>
+  <button v-on:click="addPenny">Add penny</button>
+  <button v-on:click="resetBag">Reset</button>
 </template>
 
 <script lang="ts">
@@ -22,8 +24,11 @@ export default defineComponent({
 
   methods: {
     addHeart() {
-      this.craftingBag = [...this.craftingBag, 1]
-      console.log(`${this.craftingBag}`)
+      this.craftingBag = [...this.craftingBag, 1];
+    },
+
+    addPenny() {
+      this.craftingBag = [...this.craftingBag, 8];
     },
 
     resetBag() {
