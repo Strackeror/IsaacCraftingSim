@@ -10,22 +10,18 @@ export default defineComponent({
   props: {
     idx: Number
   },
-  data() {
-    return {
-      pickupIconStyle: {
-        backgroundImage: `url(${require('@/assets/ui_crafting.png')})`,
-        width: "16px",
-        height: "16px",
-        backgroundPosition: `0px 0px`,
-        float: "left",
-      }
-    }
-  },
 
-  watch: {
-    idx(val) {
+  computed: {
+    pickupIconStyle(): any {
+      let val = this.idx ?? 0;
       let x = val % 8, y = Math.floor(val / 8);
-      this.pickupIconStyle.backgroundPosition = `-${x * 16}px -${y * 16}px`;
+      let backgroundPosition = `-${x * 16}px -${y * 16}px`;
+      return {
+          backgroundImage: `url(${require('@/assets/ui_crafting.png')})`,
+          width: "16px",
+          height: "16px",
+          backgroundPosition,
+      }
     }
   }
 });

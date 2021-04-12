@@ -1,24 +1,41 @@
 <template>
-  <pickup-recipe-vue v-bind:idList="craftingBag" />
-  <button v-on:click="addHeart">Add heart</button>
-  <button v-on:click="addPenny">Add penny</button>
-  <button v-on:click="resetBag">Reset</button>
+  <div style="display: flex">
+    <div>
+      <pickup-recipe-vue v-bind:idList="craftingBag" />
+      <button @click="resetBag">   Reset   </button>
+      <pickup-counter v-for="n in [1, 2, 3, 4, 5]" :key="n" :idx="n" @addBag="addBag" @countChanged="countChanged"/>
+    </div>
+      {{results}}
+    <div style="overflow:scroll; height:400px">
+      Count: {{recipes.length}}
+      <pickup-recipe-vue v-for="recipe in recipes" :key="recipe" :idList="recipe" style="padding-top: 10px"/>
+    </div>
+    <div>
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue';
 import PickupIcon from "./components/PickupIcon.vue";
 import PickupRecipeVue from './components/PickupRecipe.vue';
+import PickupCounter from "./components/PickupCounter.vue";
+import {crafting} from "./crafting"
+
+let c = new crafting();
 
 export default defineComponent({
   name: 'App',
   components: {
-    PickupRecipeVue
+    PickupRecipeVue,
+    PickupCounter
   },
 
   data() {
     return {
-      craftingBag: [] as number[]
+      craftingBag: [] as number[],
+      pickupCounts: {} as {[n: number]: number},
+      recipes: [] as number[][]
     }
   },
 
@@ -33,6 +50,18 @@ export default defineComponent({
 
     resetBag() {
       this.craftingBag = [];
+    },
+
+    addBag(id: number) {
+      this.craftingBag = [...this.craftingBag, id];
+    },
+
+    countChanged(id:number, count:number) {
+      if (!(id in this.pickupCounts)) {
+        this.pickupCounts[id] = 0;
+      }
+      this.pickupCounts[id] = count;
+      this.recipes = c.getCombinations({...this.pickupCounts});
     }
   }
 });

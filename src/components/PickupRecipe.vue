@@ -1,17 +1,13 @@
 <template>
-  <div style="width:64px; height:32px;">
-    <div>
+  <div style="width:64px; height:32px; display: grid; grid-template-rows: 16px 16px; grid-template-columns: 16px 16px 16px 16px">
       <pickup-icon v-bind:idx="ids[0]" />
-      <pickup-icon v-bind:idx="ids[1]" />
+      <pickup-icon v-bind:idx="ids[1]"/>
       <pickup-icon v-bind:idx="ids[2]" />
       <pickup-icon v-bind:idx="ids[3]" />
-    </div>
-    <div>
       <pickup-icon v-bind:idx="ids[4]" />
       <pickup-icon v-bind:idx="ids[5]" />
       <pickup-icon v-bind:idx="ids[6]" />
       <pickup-icon v-bind:idx="ids[7]" />
-    </div>
   </div>
 </template>
 
