@@ -36,7 +36,6 @@ export default defineComponent({
       while (ret.length < 8) {
         ret.push(0);
       }
-      console.log(ret)
       return ret;
     }
   },
