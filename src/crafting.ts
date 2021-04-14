@@ -1,8 +1,7 @@
 import * as d3 from "d3";
 import { sort } from "d3";
 
-const pickupIdxList = [1, 2, 3, 4, 5];
-
+const pickupIdxList = [8, 1, 12, 15, 2, 9, 21, 22, 7, 3, 4, 5, 6, 18, 10, 11, 13, 14, 16, 19, 23, 20, 24, 25, 17]
 interface ItemPoolEntry {
   id: number;
   weight: number;

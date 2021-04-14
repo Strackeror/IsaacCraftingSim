@@ -2,10 +2,7 @@
   <div style="display: flex">
     <pickup-icon v-bind:idx="idx"/>
     
-    <button v-on:click="add">+</button>
-    <button v-on:click="remove">-</button>
-    <button v-on:click="addBag">B</button>
-    {{count}}
+    <input type="number" min="0" max="99" style="width:30px" v-model="count" @change="countChanged(count)">
   </div>
 </template>
 
@@ -30,6 +27,10 @@ export default defineComponent({
   emits: ['addBag', 'countChanged'],
 
   methods: {
+    countChanged(val:number) {
+      this.$emit('countChanged', this.idx ?? 0, val);
+    },
+
     add() {
       this.count += 1;
       this.$emit('countChanged', this.idx ?? 0, this.count);
