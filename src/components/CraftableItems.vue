@@ -11,7 +11,7 @@
         @mouseout="hoveredRecipes = []"
         style="height: 40px; width: 40px; border-style: solid"
       >
-        <img :src="`/collectibles/${items[id].img}`"/>
+        <img :src="`./collectibles/${items[id].img}`"/>
       </div>
     </div>
     <div style="overflow-y:auto; padding-left:20px; height:90vh">
@@ -59,11 +59,11 @@ export default defineComponent({
   created() {
     craft.loadItems();
     (async () => {
-      const xmlItems = await d3.xml("/items.xml");
+      const xmlItems = await d3.xml("./items.xml");
       for (const item of xmlItems.querySelectorAll("passive,active,familiar")) {
         this.items[Number(item.getAttribute("id"))] = {
           name: String(item.getAttribute("name")),
-          img: String(item.getAttribute("gfx")),
+          img: String(item.getAttribute("gfx")).toLowerCase(),
         };
       }
     })();

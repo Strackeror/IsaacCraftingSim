@@ -160,7 +160,7 @@ export class crafting {
   async loadItems() {
     const qualityMap: { [id: number]: number } = {};
 
-    const xmlItemMetadata = await d3.xml("/items_metadata.xml");
+    const xmlItemMetadata = await d3.xml("./items_metadata.xml");
     for (const item of xmlItemMetadata.querySelectorAll("item")) {
       const id = Number(item.getAttribute("id"));
       const quality = Number(item.getAttribute("quality"));
@@ -169,7 +169,7 @@ export class crafting {
       }
     }
 
-    const xmlPools = await d3.xml("/itempools.xml");
+    const xmlPools = await d3.xml("./itempools.xml");
     for (const xmlPool of xmlPools.querySelectorAll("Pool")) {
       const pool: ItemPoolEntry[] = [];
       for (const item of xmlPool.querySelectorAll("Item")) {
