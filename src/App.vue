@@ -8,7 +8,7 @@
       <div
         v-for="line in pickupCounters"
         :key="line"
-        style="display: flex; padding-top: 30px"
+        style="display: flex; padding-top: 20px"
       >
         <pickup-counter
           v-for="n in line"
@@ -21,7 +21,7 @@
       </div>
       <button @click="resetAll">Reset All</button>
     </div>
-    <craftable-items :pickupCounts="pickupCounts"/>
+    <craftable-items :pickupCounts="pickupCounts" :pickupsInBag="craftingBag"/>
 
     <div></div>
   </div>

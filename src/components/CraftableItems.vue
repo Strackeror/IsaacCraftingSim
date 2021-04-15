@@ -9,9 +9,9 @@
         :key="id"
         @mouseover="hoveredRecipes = value"
         @mouseout="hoveredRecipes = []"
-        style="height: 40px; width: 40px; border-style: solid"
+        style="border-style: solid"
       >
-        <img :src="`./collectibles/${items[id].img}`"/>
+        <img :src="`./collectibles/${items[id].img}`" style="padding:5px"/>
       </div>
     </div>
     <div style="overflow-y:auto; padding-left:20px; height:90vh">
@@ -42,6 +42,7 @@ export default defineComponent({
   },
   props: {
     pickupCounts: Object as PropType<{ [n: number]: number }>,
+    pickupsInBag: Object as PropType<number[]>,
   },
 
   data() {
@@ -73,9 +74,12 @@ export default defineComponent({
     itemRecipeMap(): ItemRecipeMap {
       const map: ItemRecipeMap = {};
 
-      const combinations = craft.getCombinations({
-        ...(this.pickupCounts ?? {}),
-      });
+      const combinations = craft.getCombinations(
+        {
+          ...(this.pickupCounts ?? {}),
+        },
+        [...(this.pickupsInBag ?? [])]
+      );
       for (const recipe of combinations) {
         const item = craft.craftItem([...recipe]);
         if (item) {

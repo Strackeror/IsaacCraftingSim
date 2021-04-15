@@ -207,9 +207,9 @@ export class crafting {
     }
   }
 
-  getCombinations(availablePickups: { [n: number]: number }): number[][] {
+  getCombinations(availablePickups: { [n: number]: number }, startingPickups:number[]): number[][] {
     const foundRecipes: number[][] = [];
-    this.recurseCombinations(availablePickups, [], 0, foundRecipes);
+    this.recurseCombinations(availablePickups, startingPickups, 0, foundRecipes);
     return foundRecipes;
   }
 

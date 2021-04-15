@@ -1,5 +1,5 @@
 <template>
-  <div style="width:64px; height:32px; display: grid; grid-template-rows: 16px 16px; grid-template-columns: 16px 16px 16px 16px">
+  <div style="width:128px; height:64px; display: grid; grid-template-rows: 32px 32px; grid-template-columns: 32px 32px 32px 32px">
       <pickup-icon v-bind:idx="ids[0]" />
       <pickup-icon v-bind:idx="ids[1]"/>
       <pickup-icon v-bind:idx="ids[2]" />

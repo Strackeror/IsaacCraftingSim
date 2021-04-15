@@ -1,5 +1,5 @@
 <template>
-  <div v-bind:style="pickupIconStyle"></div>
+  <div v-bind:style="pickupIconStyle" @click="pickupClicked"></div>
 </template>
 
 <script lang="ts">
@@ -11,15 +11,26 @@ export default defineComponent({
     idx: Number
   },
 
+  emits: ['pickupClicked'],
+
+  methods: {
+    pickupClicked() {
+      this.$emit("pickupClicked");
+    }
+
+  },
+
   computed: {
     pickupIconStyle(): any {
       let val = this.idx ?? 0;
       let x = val % 8, y = Math.floor(val / 8);
-      let backgroundPosition = `-${x * 16}px -${y * 16}px`;
+      let backgroundPosition = `-${x * 32}px -${y * 32}px`;
       return {
+          imageRendering: "crisp-edges",
           backgroundImage: `url(${require('@/assets/ui_crafting.png')})`,
-          width: "16px",
-          height: "16px",
+          width: "32px",
+          height: "32px",
+          backgroundSize: "256px",
           backgroundPosition,
       }
     }
