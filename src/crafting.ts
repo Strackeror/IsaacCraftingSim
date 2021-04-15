@@ -145,11 +145,9 @@ const qualityBoundsList: [number, [number, number]][] = [
 ];
 
 function rngShift(seed: number, shifts: number[]): number {
-  seed ^= (seed >>> shifts[0]) >>> 0;
-  seed >>>= 0;
-  seed ^= (seed << shifts[1]) >>> 0;
-  seed >>>= 0;
-  seed ^= (seed >>> shifts[2]) >>> 0;
+  seed ^= (seed >>> shifts[0]) & 0xffffffff;
+  seed ^= (seed << shifts[1]) & 0xffffffff;
+  seed ^= (seed >>> shifts[2]) & 0xffffffff;
   seed >>>= 0;
   return seed;
 }
@@ -268,7 +266,7 @@ export class crafting {
       return 0;
     }
 
-    const sortedRecipe = [...recipe].sort();
+    const sortedRecipe = [...recipe].sort((a, b)=>a-b);
 
     let seed = 0x77777770;
     for (const pickupId of sortedRecipe) {
