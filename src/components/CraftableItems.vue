@@ -7,16 +7,20 @@
         class="item"
         v-for="(value, id) in itemRecipeMap"
         :key="id"
-        @mouseover="hoveredRecipes = value"
-        @mouseout="hoveredRecipes = []"
-        style="border-style: solid"
+        @mouseover="hoveredItem = id"
+        @mouseout="hoveredItem = 0"
+        @click="selectItem(id)"
+        :style="`border-style: solid; border-color: ${itemBorderColor(id)}`"
       >
-        <img :src="`./collectibles/${items[id].img}`" style="padding:5px"/>
+        <img :src="`./collectibles/${items[id].img}`" style="image-rendering: crisp-edges" height="64" width="64"/>
       </div>
     </div>
     <div style="overflow-y:auto; padding-left:20px; height:90vh">
+      <div v-if="shownItem">
+        {{items[shownItem].name}}
+      </div>
       <div
-        v-for="recipe in hoveredRecipes"
+        v-for="recipe in shownRecipes"
         :key="recipe"
         style="padding-top: 10px; display: flex"
       >
@@ -47,7 +51,8 @@ export default defineComponent({
 
   data() {
     return {
-      hoveredRecipes: [] as number[][],
+      selectedItem: 0,
+      hoveredItem: 0,
       items: {} as {
         [id: number]: {
           name: string;
@@ -70,7 +75,23 @@ export default defineComponent({
     })();
   },
 
+  methods: {
+    selectItem(id: number) {
+      this.selectedItem = this.selectedItem == id ? 0 : id;
+    },
+
+    itemBorderColor(id: number) {
+      if (this.selectedItem == id) {
+        return "green";
+      }
+      return "darkgray";
+    }
+
+
+  },
+
   computed: {
+
     itemRecipeMap(): ItemRecipeMap {
       const map: ItemRecipeMap = {};
 
@@ -89,6 +110,24 @@ export default defineComponent({
       }
       return map;
     },
+
+    shownItem(): number {
+      if (this.hoveredItem)
+        return this.hoveredItem;
+      return this.selectedItem;
+    },
+
+    shownRecipes() {
+      const recipes:number[][] = [];
+
+      if (this.itemRecipeMap && this.shownItem in this.itemRecipeMap) {
+        for (let recipe of this.itemRecipeMap[this.shownItem]) {
+          recipes.push(recipe)
+        }
+      }
+
+      return recipes;
+    },
   },
 });
 </script>
@@ -101,4 +140,5 @@ export default defineComponent({
 .item {
   background: gray;
 }
+
 </style>

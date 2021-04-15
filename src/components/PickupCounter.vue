@@ -56,3 +56,10 @@ export default defineComponent({
   },
 });
 </script>
+
+<style scoped>
+pickup-icon:hover {
+  border-style: solid;
+  
+}
+</style>

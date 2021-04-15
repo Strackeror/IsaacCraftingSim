@@ -226,7 +226,7 @@ export class crafting {
       [2, 2],
       [3, (pickupCounts[3] ?? 0) * 10],
       [4, (pickupCounts[4] ?? 0) * 10],
-      [5, (pickupCounts[6] ?? 0) * 10],
+      [5, (pickupCounts[6] ?? 0) * 5],
       [8, (pickupCounts[5] ?? 0) * 10],
       [9, (pickupCounts[25] ?? 0) * 10],
       [12, (pickupCounts[7] ?? 0) * 10],

@@ -92,7 +92,8 @@ export default defineComponent({
     },
 
     addBag(id: number) {
-      this.craftingBag = [...this.craftingBag, id];
+      if (this.craftingBag.length < 8)
+        this.craftingBag = [...this.craftingBag, id];
     },
 
     craftedItem(recipe: number[]) {
