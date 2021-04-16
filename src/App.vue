@@ -14,16 +14,15 @@
           v-for="n in line"
           :key="n"
           :idx="n"
+          v-model:count="pickupCounts[n]"
           @addBag="addBag"
-          @countChanged="countChanged"
-          :ref="pickupCounter"
         />
       </div>
       <button @click="resetAll">Reset All</button>
     </div>
-    <craftable-items :pickupCounts="pickupCounts" :pickupsInBag="craftingBag"/>
+    <craftable-items :pickupCounts="pickupCounts" :pickupsInBag="craftingBag" @recipeClicked="recipeClicked"/>
 
-    <div></div>
+    <craft-history :recipeHistory="recipeHistory" @undo="undo" @clear="clearHistory"/>
   </div>
 </template>
 
@@ -33,6 +32,8 @@ import PickupRecipeVue from "./components/PickupRecipe.vue";
 import PickupCounter from "./components/PickupCounter.vue";
 import CraftableItems from "./components/CraftableItems.vue";
 import { crafting } from "./crafting";
+import { RecipeEntry } from "./components/CraftHistory.vue";
+import CraftHistory from "./components/CraftHistory.vue";
 
 let c = new crafting();
 
@@ -42,6 +43,7 @@ export default defineComponent({
     PickupRecipeVue,
     PickupCounter,
     CraftableItems,
+    CraftHistory,
   },
 
   data() {
@@ -57,7 +59,7 @@ export default defineComponent({
         [18, 19, 20],
         [21, 22, 23, 24, 25],
       ],
-      counterElements: [] as ComponentPublicInstance[],
+      recipeHistory: [] as RecipeEntry[]
     };
   },
 
@@ -78,17 +80,10 @@ export default defineComponent({
       this.craftingBag = [];
     },
 
-    pickupCounter(element: ComponentPublicInstance) {
-      if (element) {
-        this.counterElements.push(element);
-      }
-    },
-
     resetAll() {
-      this.counterElements.forEach((n: any) => {
-        n.count = 0;
-        n.countChanged(0);
-      });
+      for (let id in this.pickupCounts) {
+        this.pickupCounts[id] = 0;
+      }
     },
 
     addBag(id: number) {
@@ -100,18 +95,36 @@ export default defineComponent({
       return c.craftItem(recipe);
     },
 
-    countChanged(id: number, count: number) {
-      if (!(id in this.pickupCounts)) {
-        this.pickupCounts[id] = 0;
+    recipeClicked(recipe: number[], item: number) {
+      this.recipeHistory.push({recipe, craftBag: this.craftingBag, item})
+      const pickupsToRemove = recipe.slice(this.craftingBag.length);
+      for (const pickup of pickupsToRemove) {
+        this.pickupCounts[pickup] -= 1;
       }
-      this.pickupCounts[id] = count;
-      //this.recipes = c.getCombinations({ ...this.pickupCounts });
+      this.craftingBag = [];
+      console.log(recipe, item);
     },
+
+    undo() {
+      const recipeEntry = this.recipeHistory.pop();
+      if (recipeEntry) {
+        recipeEntry.craftBag.forEach(n => this.addBag(n));
+        const pickupsToAdd = recipeEntry.recipe.slice(recipeEntry.craftBag.length);
+        pickupsToAdd.forEach(n => this.pickupCounts[n] += 1);
+      }
+    },
+
+    clearHistory() {
+      this.recipeHistory = []
+    }
   },
 });
 </script>
 
 <style>
+body {
+  background: lightgray;
+}
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

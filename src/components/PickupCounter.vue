@@ -1,20 +1,21 @@
 <template>
   <div style="display: flex; flex-direction: column; padding-left:5px">
-    <pickup-icon v-bind:idx="idx" @pickupClicked="addBag" />
+    <div class="pickupIcon">
+      <pickup-icon v-bind:idx="idx" @pickupClicked="addBag" />
+    </div>
 
     <input
       type="number"
       min="0"
       max="99"
       style="width:30px"
-      v-model="count"
-      @change="countChanged(count)"
+      v-model="inputCount"
     />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, watch } from "vue";
+import { defineComponent } from "vue";
 import PickupIcon from "./PickupIcon.vue";
 
 export default defineComponent({
@@ -24,42 +25,32 @@ export default defineComponent({
   },
   props: {
     idx: Number,
-  },
-  data() {
-    return {
-      count: 0,
-    };
+    count: Number,
   },
 
-  emits: ["addBag", "countChanged"],
+  emits: ["addBag", "update:count"],
 
   methods: {
-    countChanged(val: number) {
-      this.$emit("countChanged", this.idx ?? 0, val);
-    },
-
-    add() {
-      this.count += 1;
-      this.$emit("countChanged", this.idx ?? 0, this.count);
-    },
-
-    remove() {
-      if (this.count > 0) {
-        this.count -= 1;
-        this.$emit("countChanged", this.idx ?? 0, this.count);
-      }
-    },
-
     addBag() {
       this.$emit("addBag", this.idx ?? 0);
+    },
+  },
+
+  computed: {
+    inputCount: {
+      get(): number {
+        return this.count ?? 0;
+      },
+      set(value: number) {
+        this.$emit("update:count", value);
+      },
     },
   },
 });
 </script>
 
 <style scoped>
-pickup-icon:hover {
-  border-style: solid;
-  
+.pickupIcon:hover {
+  background: gray;
 }
 </style>

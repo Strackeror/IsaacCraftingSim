@@ -1,5 +1,5 @@
 <template>
-  <div style="display: flex">
+  <div style="display: flex; background: #999; padding-top:20px">
     <div
       style="overflow-y:auto; padding-left:20px; height:90vh; width: 30vw; display: flex; flex-wrap: wrap; align-content: flex-start"
     >
@@ -15,16 +15,18 @@
         <img :src="`./collectibles/${items[id].img}`" style="image-rendering: crisp-edges" height="64" width="64"/>
       </div>
     </div>
-    <div style="overflow-y:auto; padding-left:20px; height:90vh">
+    <div style="overflow-y:auto; padding-left:20px; height:90vh; width: 150px">
       <div v-if="shownItem">
         {{items[shownItem].name}}
       </div>
       <div
+        class="shownRecipeEntry"
         v-for="recipe in shownRecipes"
         :key="recipe"
-        style="padding-top: 10px; display: flex"
       >
-        <pickup-recipe :idList="recipe" style="background: gray" />
+        <div class="shownRecipe">
+          <pickup-recipe :idList="recipe" @click="recipeClicked(recipe, shownItem)"/>
+        </div>
       </div>
     </div>
   </div>
@@ -62,6 +64,8 @@ export default defineComponent({
     };
   },
 
+  emits: ["recipeClicked"],
+
   created() {
     craft.loadItems();
     (async () => {
@@ -85,8 +89,11 @@ export default defineComponent({
         return "green";
       }
       return "darkgray";
+    },
+    
+    recipeClicked(recipe: number[], item: number) {
+      this.$emit("recipeClicked", recipe, item);
     }
-
 
   },
 
@@ -114,7 +121,9 @@ export default defineComponent({
     shownItem(): number {
       if (this.hoveredItem)
         return this.hoveredItem;
-      return this.selectedItem;
+      if (this.selectedItem in this.itemRecipeMap)
+        return this.selectedItem;
+      return 0;
     },
 
     shownRecipes() {
@@ -133,6 +142,19 @@ export default defineComponent({
 </script>
 
 <style>
+.shownRecipeEntry {
+  display: flex;
+  padding-top: 10px;
+}
+
+.shownRecipe {
+  background: gray;
+}
+
+.shownRecipe:hover {
+  background: lightgray;
+}
+
 .item:hover {
   background: lightgray;
 }
