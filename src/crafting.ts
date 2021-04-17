@@ -1,7 +1,34 @@
 import * as d3 from "d3";
-import { sort } from "d3";
+import * as items from "./items";
 
-const pickupIdxList = [8, 1, 12, 15, 2, 9, 21, 22, 7, 3, 4, 5, 6, 18, 10, 11, 13, 14, 16, 19, 23, 20, 24, 25, 17]
+const pickupIdxList = [
+  8,
+  1,
+  12,
+  15,
+  2,
+  9,
+  21,
+  22,
+  7,
+  3,
+  4,
+  5,
+  6,
+  18,
+  10,
+  11,
+  13,
+  14,
+  16,
+  19,
+  23,
+  20,
+  24,
+  25,
+  17,
+];
+
 interface ItemPoolEntry {
   id: number;
   weight: number;
@@ -152,154 +179,148 @@ function rngShift(seed: number, shifts: number[]): number {
   return seed;
 }
 
-export class crafting {
-  itemPools: ItemPoolEntry[][] = [];
+const itemPools: ItemPoolEntry[][] = [];
 
-  async loadItems() {
-    const qualityMap: { [id: number]: number } = {};
+function recurseCombinations(
+  availablePickups: { [n: number]: number },
+  currentRecipe: number[],
+  counter: number,
+  foundRecipes: number[][]
+): void {
+  if (currentRecipe.length == 8) {
+    foundRecipes.push([...currentRecipe]);
+  }
 
-    const xmlItemMetadata = await d3.xml("./items_metadata.xml");
-    for (const item of xmlItemMetadata.querySelectorAll("item")) {
-      const id = Number(item.getAttribute("id"));
-      const quality = Number(item.getAttribute("quality"));
-      if (id && quality) {
-        qualityMap[id] = quality;
-      }
+  for (let i = counter; i < pickupIdxList.length; ++i) {
+    const pickupId = pickupIdxList[i];
+    if (pickupId in availablePickups && availablePickups[pickupId] > 0) {
+      availablePickups[pickupId] -= 1;
+      recurseCombinations(
+        availablePickups,
+        [...currentRecipe, pickupId],
+        i,
+        foundRecipes
+      );
+      availablePickups[pickupId] += 1;
     }
+  }
+}
 
-    const xmlPools = await d3.xml("./itempools.xml");
-    for (const xmlPool of xmlPools.querySelectorAll("Pool")) {
-      const pool: ItemPoolEntry[] = [];
-      for (const item of xmlPool.querySelectorAll("Item")) {
-        const id = Number(item.getAttribute("Id"));
-        pool.push({
-          id,
-          weight: Number(item.getAttribute("Weight")),
-          quality: qualityMap[id] ?? 0,
-        });
-      }
-      this.itemPools.push(pool);
+export function getCombinations(
+  availablePickups: { [n: number]: number },
+  startingPickups: number[]
+): number[][] {
+  const foundRecipes: number[][] = [];
+  recurseCombinations(availablePickups, startingPickups, 0, foundRecipes);
+  return foundRecipes;
+}
+
+export async function loadPools() {
+  const xmlPools = await d3.xml("./itempools.xml");
+  for (const xmlPool of xmlPools.querySelectorAll("Pool")) {
+    const pool: ItemPoolEntry[] = [];
+    for (const item of xmlPool.querySelectorAll("Item")) {
+      const id = Number(item.getAttribute("Id"));
+      pool.push({
+        id,
+        weight: Number(item.getAttribute("Weight")),
+        quality: items.items[id].quality,
+      });
+    }
+    itemPools.push(pool);
+  }
+}
+
+function getPoolWeights(recipe: number[]): [number, number][] {
+  const pickupCounts: { [n: number]: number } = {};
+
+  for (const pickupId of recipe) {
+    pickupCounts[pickupId] = (pickupCounts[pickupId] ?? 0) + 1;
+  }
+
+  const poolWeights: [number, number][] = [
+    [0, 1],
+    [1, 2],
+    [2, 2],
+    [3, (pickupCounts[3] ?? 0) * 10],
+    [4, (pickupCounts[4] ?? 0) * 10],
+    [5, (pickupCounts[6] ?? 0) * 5],
+    [8, (pickupCounts[5] ?? 0) * 10],
+    [9, (pickupCounts[25] ?? 0) * 10],
+    [12, (pickupCounts[7] ?? 0) * 10],
+  ];
+
+  let combined = 0;
+  for (const i of [1, 8, 12, 15]) {
+    combined += pickupCounts[i] ?? 0;
+  }
+  if (combined == 0) {
+    poolWeights.push([26, (pickupCounts[23] ?? 0) * 10]);
+  }
+
+  return poolWeights;
+}
+
+function getQualityBounds(
+  recipe: number[],
+  itemPoolIdx: number
+): [number, number] {
+  let totalValue = 0;
+  for (const pickupId of recipe) {
+    totalValue += pickupValues[pickupId];
+  }
+
+  if (itemPoolIdx >= 3 && itemPoolIdx <= 5) {
+    totalValue -= 5;
+  }
+
+  for (const qualityBounds of qualityBoundsList) {
+    if (totalValue > qualityBounds[0]) {
+      return qualityBounds[1];
+    }
+  }
+  return [0, 0];
+}
+
+export function craftItem(recipe: number[]): number {
+  if (recipe.length != 8) {
+    return 0;
+  }
+
+  const sortedRecipe = [...recipe].sort((a, b) => a - b);
+
+  let seed = 0x77777770;
+  for (const pickupId of sortedRecipe) {
+    seed = rngShift(seed, pickupShifts[pickupId]);
+  }
+
+  const poolWeights = getPoolWeights(recipe);
+  const itemWeights: { [id: number]: number } = {};
+  let totalWeight = 0;
+
+  for (const poolWeight of poolWeights) {
+    const itemPool = itemPools[poolWeight[0]];
+    const qualityBounds = getQualityBounds(recipe, poolWeight[0]);
+    for (const item of itemPool) {
+      if (item.quality < qualityBounds[0] || item.quality > qualityBounds[1])
+        continue;
+      itemWeights[item.id] =
+        (itemWeights[item.id] ?? 0) + item.weight * poolWeight[1];
+      totalWeight += item.weight * poolWeight[1];
     }
   }
 
-  private recurseCombinations(
-    availablePickups: { [n: number]: number },
-    currentRecipe: number[],
-    counter: number,
-    foundRecipes: number[][]
-  ): void {
-    if (currentRecipe.length == 8) {
-      foundRecipes.push([...currentRecipe]);
-    }
+  seed = rngShift(seed, [1, 21, 20]);
+  const seedMultiplier = 2.3283061589829401e-10;
 
-    for (let i = counter; i < pickupIdxList.length; ++i) {
-      const pickupId = pickupIdxList[i];
-      if (pickupId in availablePickups && availablePickups[pickupId] > 0) {
-        availablePickups[pickupId] -= 1;
-        this.recurseCombinations(
-          availablePickups,
-          [...currentRecipe, pickupId],
-          i,
-          foundRecipes
-        );
-        availablePickups[pickupId] += 1;
-      }
+  let target = seed * seedMultiplier * totalWeight;
+
+  for (const id in itemWeights) {
+    const weight = itemWeights[id];
+    target -= weight;
+    if (target < 0) {
+      return +id;
     }
   }
-
-  getCombinations(availablePickups: { [n: number]: number }, startingPickups:number[]): number[][] {
-    const foundRecipes: number[][] = [];
-    this.recurseCombinations(availablePickups, startingPickups, 0, foundRecipes);
-    return foundRecipes;
-  }
-
-  private getPoolWeights(recipe: number[]): [id: number, weight: number][] {
-    const pickupCounts: { [n: number]: number } = {};
-
-    for (const pickupId of recipe) {
-      pickupCounts[pickupId] = (pickupCounts[pickupId] ?? 0) + 1;
-    }
-
-    const poolWeights:[number, number][] = [
-      [0, 1],
-      [1, 2],
-      [2, 2],
-      [3, (pickupCounts[3] ?? 0) * 10],
-      [4, (pickupCounts[4] ?? 0) * 10],
-      [5, (pickupCounts[6] ?? 0) * 5],
-      [8, (pickupCounts[5] ?? 0) * 10],
-      [9, (pickupCounts[25] ?? 0) * 10],
-      [12, (pickupCounts[7] ?? 0) * 10],
-    ];
-
-    let combined = 0;
-    for (const i of [1, 8, 12, 15]) {
-      combined += pickupCounts[i] ?? 0;
-    }
-    if (combined == 0) {
-      poolWeights.push([26, (pickupCounts[23] ?? 0) * 10]);
-    }
-
-    return poolWeights;
-  }
-
-  private getQualityBounds(recipe: number[], itemPoolIdx: number): [number, number] {
-    let totalValue = 0;
-    for (const pickupId of recipe) {
-      totalValue += pickupValues[pickupId];
-    }
-
-    if (itemPoolIdx >= 3 && itemPoolIdx <= 5) {
-      totalValue -= 5;
-    }
-
-    for (const qualityBounds of qualityBoundsList) {
-      if (totalValue > qualityBounds[0]) {
-        return qualityBounds[1];
-      }
-    }
-    return [0, 0];
-  }
-
-  craftItem(recipe: number[]): number {
-    if (recipe.length != 8) {
-      return 0;
-    }
-
-    const sortedRecipe = [...recipe].sort((a, b)=>a-b);
-
-    let seed = 0x77777770;
-    for (const pickupId of sortedRecipe) {
-      seed = rngShift(seed, pickupShifts[pickupId]);
-    }
-
-    const poolWeights = this.getPoolWeights(recipe);
-    const itemWeights: {[id: number]: number} = {};
-    let totalWeight = 0;
-
-    for (const poolWeight of poolWeights) {
-      const itemPool = this.itemPools[poolWeight[0]]
-      const qualityBounds = this.getQualityBounds(recipe, poolWeight[0]);
-      for (const item of itemPool) {
-        if (item.quality < qualityBounds[0] || item.quality > qualityBounds[1])
-          continue;
-        itemWeights[item.id] = (itemWeights[item.id] ?? 0) + item.weight * poolWeight[1];
-        totalWeight += item.weight * poolWeight[1];
-      }
-    }
-
-    seed = rngShift(seed, [1, 21, 20]);
-    const seedMultiplier = 2.3283061589829401e-10;
-
-    let target = seed * seedMultiplier * totalWeight;
-
-    for (const id in itemWeights) {
-      const weight = itemWeights[id];
-      target -= weight
-      if (target < 0) {
-        return +id;
-      }
-    }
-    return 25;
-  }
+  return 25;
 }

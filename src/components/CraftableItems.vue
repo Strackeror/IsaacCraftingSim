@@ -12,12 +12,28 @@
         @click="selectItem(id)"
         :style="`border-style: solid; border-color: ${itemBorderColor(id)}`"
       >
-        <img :src="`./collectibles/${items[id].img}`" style="image-rendering: crisp-edges" height="64" width="64"/>
+        <img
+          :src="`./collectibles/${items[id].img}`"
+          style="image-rendering: crisp-edges"
+          height="64"
+          width="64"
+        />
       </div>
     </div>
-    <div style="overflow-y:auto; padding-left:20px; height:90vh; width: 150px">
+    <div
+      class="shownRecipePanel"
+      style="overflow-y:auto; padding-left:20px; height:90vh; width: 150px"
+    >
       <div v-if="shownItem">
-        {{items[shownItem].name}}
+        {{ items[shownItem].name }}
+      </div>
+      <div v-if="shownItem">
+        <img
+          :src="`./collectibles/${items[shownItem].img}`"
+          style="image-rendering: crisp-edges"
+          height="64"
+          width="64"
+        />
       </div>
       <div
         class="shownRecipeEntry"
@@ -25,123 +41,26 @@
         :key="recipe"
       >
         <div class="shownRecipe">
-          <pickup-recipe :idList="recipe" @click="recipeClicked(recipe, shownItem)"/>
+          <pickup-recipe
+            :idList="recipe"
+            @click="recipeClicked(recipe, shownItem)"
+          />
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, PropType } from "vue";
-import { crafting } from "../crafting";
-import PickupRecipe from "./PickupRecipe.vue";
-import * as d3 from "d3";
-
-let craft = new crafting();
-type ItemRecipeMap = { [id: number]: number[][] };
-
-export default defineComponent({
-  name: "CraftableItems",
-  components: {
-    PickupRecipe,
-  },
-  props: {
-    pickupCounts: Object as PropType<{ [n: number]: number }>,
-    pickupsInBag: Object as PropType<number[]>,
-  },
-
-  data() {
-    return {
-      selectedItem: 0,
-      hoveredItem: 0,
-      items: {} as {
-        [id: number]: {
-          name: string;
-          img: string;
-        };
-      },
-    };
-  },
-
-  emits: ["recipeClicked"],
-
-  created() {
-    craft.loadItems();
-    (async () => {
-      const xmlItems = await d3.xml("./items.xml");
-      for (const item of xmlItems.querySelectorAll("passive,active,familiar")) {
-        this.items[Number(item.getAttribute("id"))] = {
-          name: String(item.getAttribute("name")),
-          img: String(item.getAttribute("gfx")).toLowerCase(),
-        };
-      }
-    })();
-  },
-
-  methods: {
-    selectItem(id: number) {
-      this.selectedItem = this.selectedItem == id ? 0 : id;
-    },
-
-    itemBorderColor(id: number) {
-      if (this.selectedItem == id) {
-        return "green";
-      }
-      return "darkgray";
-    },
-    
-    recipeClicked(recipe: number[], item: number) {
-      this.$emit("recipeClicked", recipe, item);
-    }
-
-  },
-
-  computed: {
-
-    itemRecipeMap(): ItemRecipeMap {
-      const map: ItemRecipeMap = {};
-
-      const combinations = craft.getCombinations(
-        {
-          ...(this.pickupCounts ?? {}),
-        },
-        [...(this.pickupsInBag ?? [])]
-      );
-      for (const recipe of combinations) {
-        const item = craft.craftItem([...recipe]);
-        if (item) {
-          map[item] = map[item] ?? [];
-          map[item].push(recipe);
-        }
-      }
-      return map;
-    },
-
-    shownItem(): number {
-      if (this.hoveredItem)
-        return this.hoveredItem;
-      if (this.selectedItem in this.itemRecipeMap)
-        return this.selectedItem;
-      return 0;
-    },
-
-    shownRecipes() {
-      const recipes:number[][] = [];
-
-      if (this.itemRecipeMap && this.shownItem in this.itemRecipeMap) {
-        for (let recipe of this.itemRecipeMap[this.shownItem]) {
-          recipes.push(recipe)
-        }
-      }
-
-      return recipes;
-    },
-  },
-});
-</script>
-
 <style>
+.shownRecipePanel {
+  height: 90vh;
+  overflow-y: auto;
+  padding-left: 20px;
+  width: 150px;
+  display: flex;
+  flex-direction: column;
+}
+
 .shownRecipeEntry {
   display: flex;
   padding-top: 10px;
@@ -162,5 +81,94 @@ export default defineComponent({
 .item {
   background: gray;
 }
-
 </style>
+
+<script lang="ts">
+import { defineComponent, PropType } from "vue";
+import PickupRecipe from "./PickupRecipe.vue";
+import * as crafting from "../crafting";
+import * as items from "../items";
+
+type ItemRecipeMap = { [id: number]: number[][] };
+
+export default defineComponent({
+  name: "CraftableItems",
+  components: {
+    PickupRecipe,
+  },
+  props: {
+    pickupCounts: Object as PropType<{ [n: number]: number }>,
+    pickupsInBag: Object as PropType<number[]>,
+  },
+
+  data() {
+    return {
+      selectedItem: 0,
+      hoveredItem: 0,
+    };
+  },
+
+  emits: ["recipeClicked"],
+
+  methods: {
+    selectItem(id: number) {
+      this.selectedItem = this.selectedItem == id ? 0 : id;
+    },
+
+    itemBorderColor(id: number) {
+      if (this.selectedItem == id) {
+        return "green";
+      }
+      return "darkgray";
+    },
+
+    recipeClicked(recipe: number[], item: number) {
+      this.$emit("recipeClicked", recipe, item);
+    },
+  },
+
+  computed: {
+    items() {
+      return items.items;
+    },
+
+    itemRecipeMap(): ItemRecipeMap {
+      const map: ItemRecipeMap = {};
+
+      const combinations = crafting.getCombinations(
+        {
+          ...(this.pickupCounts ?? {}),
+        },
+        [...(this.pickupsInBag ?? [])]
+      );
+
+      for (const recipe of combinations) {
+        const item = crafting.craftItem([...recipe]);
+        if (item) {
+          map[item] = map[item] ?? [];
+          map[item].push(recipe);
+        }
+      }
+      return map;
+    },
+
+    shownItem(): number {
+      if (this.hoveredItem) return this.hoveredItem;
+      if (this.selectedItem in this.itemRecipeMap) return this.selectedItem;
+      return 0;
+    },
+
+    shownRecipes() {
+      const recipes: number[][] = [];
+
+      if (this.itemRecipeMap && this.shownItem in this.itemRecipeMap) {
+        for (let recipe of this.itemRecipeMap[this.shownItem]) {
+          recipes.push(recipe);
+        }
+      }
+
+      return recipes;
+    },
+  },
+});
+</script>

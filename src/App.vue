@@ -20,22 +20,29 @@
       </div>
       <button @click="resetAll">Reset All</button>
     </div>
-    <craftable-items :pickupCounts="pickupCounts" :pickupsInBag="craftingBag" @recipeClicked="recipeClicked"/>
+    <craftable-items
+      :pickupCounts="pickupCounts"
+      :pickupsInBag="craftingBag"
+      @recipeClicked="recipeClicked"
+    />
 
-    <craft-history :recipeHistory="recipeHistory" @undo="undo" @clear="clearHistory"/>
+    <craft-history
+      :recipeHistory="recipeHistory"
+      @undo="undo"
+      @clear="clearHistory"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import { ComponentPublicInstance, defineComponent } from "vue";
+import { defineComponent } from "vue";
 import PickupRecipeVue from "./components/PickupRecipe.vue";
 import PickupCounter from "./components/PickupCounter.vue";
 import CraftableItems from "./components/CraftableItems.vue";
-import { crafting } from "./crafting";
 import { RecipeEntry } from "./components/CraftHistory.vue";
 import CraftHistory from "./components/CraftHistory.vue";
-
-let c = new crafting();
+import * as items from "./items";
+import * as crafting from "./crafting";
 
 export default defineComponent({
   name: "App",
@@ -59,12 +66,17 @@ export default defineComponent({
         [18, 19, 20],
         [21, 22, 23, 24, 25],
       ],
-      recipeHistory: [] as RecipeEntry[]
+      recipeHistory: [] as RecipeEntry[],
     };
   },
 
   created() {
-    c.loadItems();
+    (async () => {
+      await items.loadItems();
+      await crafting.loadPools();
+    })().catch((e) => {
+      console.log(e);
+    });
   },
 
   methods: {
@@ -92,31 +104,32 @@ export default defineComponent({
     },
 
     craftedItem(recipe: number[]) {
-      return c.craftItem(recipe);
+      return crafting.craftItem(recipe);
     },
 
     recipeClicked(recipe: number[], item: number) {
-      this.recipeHistory.push({recipe, craftBag: this.craftingBag, item})
+      this.recipeHistory.push({ recipe, craftBag: this.craftingBag, item });
       const pickupsToRemove = recipe.slice(this.craftingBag.length);
       for (const pickup of pickupsToRemove) {
         this.pickupCounts[pickup] -= 1;
       }
       this.craftingBag = [];
-      console.log(recipe, item);
     },
 
     undo() {
       const recipeEntry = this.recipeHistory.pop();
       if (recipeEntry) {
-        recipeEntry.craftBag.forEach(n => this.addBag(n));
-        const pickupsToAdd = recipeEntry.recipe.slice(recipeEntry.craftBag.length);
-        pickupsToAdd.forEach(n => this.pickupCounts[n] += 1);
+        recipeEntry.craftBag.forEach((n) => this.addBag(n));
+        const pickupsToAdd = recipeEntry.recipe.slice(
+          recipeEntry.craftBag.length
+        );
+        pickupsToAdd.forEach((n) => (this.pickupCounts[n] += 1));
       }
     },
 
     clearHistory() {
-      this.recipeHistory = []
-    }
+      this.recipeHistory = [];
+    },
   },
 });
 </script>
