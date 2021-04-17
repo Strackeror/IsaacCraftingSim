@@ -3,9 +3,9 @@
     <div class="sidePanel">
       Crafting Bag
       <div style="font-size: 70%">
-        Pickups that will have to be used
+        Pickups that will have to be used.
       </div>
-      <div style="display: flex; padding-top:10px; padding-bottom:10px">
+      <div style="display: flex; padding-top:10px; padding-bottom:5px">
         <img
           :src="`./collectibles/collectibles_710_bagofcrafting.png`"
           style="image-rendering: crisp-edges"
@@ -14,6 +14,9 @@
         />
         <pickup-recipe-vue v-bind:idList="craftingBag" />
         <button @click="resetBag">Reset</button>
+      </div>
+      <div style="font-size: 70%; padding-bottom: 10px">
+        Click on a pickup to add it to the bag.
       </div>
       <div class="pickupCountersPanel">
         Available Pickups
@@ -33,13 +36,19 @@
             @addBag="addBag"
           />
         </div>
+        <button @click="resetPickups">Clear Pickups</button>
+        <button @click="clearHistory">Clear History</button>
       </div>
-      <button @click="resetPickups">Clear Pickups</button>
-      <button @click="clearHistory">Clear History</button>
+
+      <div class="filterPanel">
+        Search
+        <input v-model="searchFilter" />
+      </div>
     </div>
     <craftable-items
       :pickupCounts="pickupCounts"
       :pickupsInBag="craftingBag"
+      :filter="searchFilter"
       @recipeClicked="recipeClicked"
       v-model:selectedItem="selectedItem"
     />
@@ -65,7 +74,13 @@
 .pickupCountersPanel {
   padding-top: 10px;
   padding-right: 10px;
+  padding-bottom: 10px;
   border-top: 5px solid gray;
+}
+
+.filterPanel {
+  border-top: 5px solid gray;
+  padding-top: 10px;
 }
 
 body {
@@ -115,6 +130,7 @@ export default defineComponent({
       ],
       recipeHistory: [] as RecipeEntry[],
       selectedItem: 0,
+      searchFilter: "",
     };
   },
 

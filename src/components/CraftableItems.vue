@@ -3,12 +3,12 @@
     <div class="itemListPanel">
       <div
         class="item"
-        v-for="(value, id) in itemRecipeMap"
+        v-for="(value, id) in shownItems"
         :key="id"
         @mouseover="hoveredItem = id"
         @mouseout="hoveredItem = 0"
         @click="selectItem(id)"
-        :style="`border-style: solid; border-color: ${itemBorderColor(id)}`"
+        :style="getItemStyle(id)"
       >
         <img
           :src="`./collectibles/${items[id].img}`"
@@ -48,8 +48,8 @@
 
 <style>
 .itemListPanel {
-  padding-left: 10px;
-  padding-top: 10px;
+  padding-left: 3px;
+  padding-top: 3px;
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
@@ -61,7 +61,7 @@
 }
 
 .shownRecipePanel {
-  padding-top: 10px;
+  padding-top: 3px;
   overflow-y: auto;
   width: 150px;
   display: flex;
@@ -91,6 +91,7 @@
 }
 
 .item {
+  margin: 3px;
   background: gray;
 }
 </style>
@@ -111,6 +112,7 @@ export default defineComponent({
   props: {
     pickupCounts: Object as PropType<{ [n: number]: number }>,
     pickupsInBag: Object as PropType<number[]>,
+    filter: { type: String, default: "" },
     selectedItem: Number,
   },
 
@@ -125,6 +127,25 @@ export default defineComponent({
   methods: {
     selectItem(id: string) {
       this.$emit("update:selectedItem", +id);
+    },
+
+    isItemInSearch(id: string): boolean {
+      if (!this.filter) {
+        return true;
+      }
+      let itemName = items.items[+id].name.toLowerCase();
+      if (itemName.search(this.filter.toLowerCase()) >= 0) {
+        return true;
+      }
+      return false;
+    },
+
+    getItemStyle(id: string) {
+      return {
+        borderStyle: "solid",
+        borderColor: this.selectedItem == +id ? "green" : "transparent",
+        filter: this.isItemInSearch(id) ? undefined : "brightness(50%)",
+      };
     },
 
     itemBorderColor(id: number) {
@@ -164,9 +185,13 @@ export default defineComponent({
       return map;
     },
 
+    shownItems(): ItemRecipeMap {
+      return this.itemRecipeMap;
+    },
+
     shownItem(): number {
       if (this.hoveredItem) return this.hoveredItem;
-      if (this.selectedItem && this.selectedItem in this.itemRecipeMap) {
+      if (this.selectedItem && this.selectedItem in this.shownItems) {
         return this.selectedItem;
       }
       return 0;
@@ -175,8 +200,8 @@ export default defineComponent({
     shownRecipes() {
       const recipes: number[][] = [];
 
-      if (this.itemRecipeMap && this.shownItem in this.itemRecipeMap) {
-        for (let recipe of this.itemRecipeMap[this.shownItem]) {
+      if (this.shownItems && this.shownItem in this.shownItems) {
+        for (let recipe of this.shownItems[this.shownItem]) {
           recipes.push(recipe);
         }
       }
