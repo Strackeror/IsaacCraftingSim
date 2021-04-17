@@ -1,29 +1,47 @@
 <template>
-  <div style="display: flex">
-    <div>
-      <div style="display: flex">
+  <div style="display: flex; flex: 1">
+    <div class="sidePanel">
+      Crafting Bag
+      <div style="font-size: 70%">
+        Pickups that will have to be used
+      </div>
+      <div style="display: flex; padding-top:10px; padding-bottom:10px">
+        <img
+          :src="`./collectibles/collectibles_710_bagofcrafting.png`"
+          style="image-rendering: crisp-edges"
+          height="64"
+          width="64"
+        />
         <pickup-recipe-vue v-bind:idList="craftingBag" />
         <button @click="resetBag">Reset</button>
       </div>
-      <div
-        v-for="line in pickupCounters"
-        :key="line"
-        style="display: flex; padding-top: 20px"
-      >
-        <pickup-counter
-          v-for="n in line"
-          :key="n"
-          :idx="n"
-          v-model:count="pickupCounts[n]"
-          @addBag="addBag"
-        />
+      <div class="pickupCountersPanel">
+        Available Pickups
+        <div style="font-size: 70%">
+          On the floor, or in your bag and replaceable
+        </div>
+        <div
+          v-for="line in pickupCounters"
+          :key="line"
+          style="display: flex; padding-top: 10px;"
+        >
+          <pickup-counter
+            v-for="n in line"
+            :key="n"
+            :idx="n"
+            v-model:count="pickupCounts[n]"
+            @addBag="addBag"
+          />
+        </div>
       </div>
-      <button @click="resetAll">Reset All</button>
+      <button @click="resetPickups">Clear Pickups</button>
+      <button @click="clearHistory">Clear History</button>
     </div>
     <craftable-items
       :pickupCounts="pickupCounts"
       :pickupsInBag="craftingBag"
       @recipeClicked="recipeClicked"
+      v-model:selectedItem="selectedItem"
     />
 
     <craft-history
@@ -33,6 +51,35 @@
     />
   </div>
 </template>
+
+<style>
+.sidePanel {
+  border: solid 5px gray;
+  border-right: 0;
+}
+.screen {
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+.pickupCountersPanel {
+  padding-top: 10px;
+  padding-right: 10px;
+  border-top: 5px solid gray;
+}
+
+body {
+  background: lightgray;
+}
+#app {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-align: center;
+  color: #2c3e50;
+  margin-top: 60px;
+}
+</style>
 
 <script lang="ts">
 import { defineComponent } from "vue";
@@ -67,6 +114,7 @@ export default defineComponent({
         [21, 22, 23, 24, 25],
       ],
       recipeHistory: [] as RecipeEntry[],
+      selectedItem: 0,
     };
   },
 
@@ -92,7 +140,7 @@ export default defineComponent({
       this.craftingBag = [];
     },
 
-    resetAll() {
+    resetPickups() {
       for (let id in this.pickupCounts) {
         this.pickupCounts[id] = 0;
       }
@@ -124,6 +172,7 @@ export default defineComponent({
           recipeEntry.craftBag.length
         );
         pickupsToAdd.forEach((n) => (this.pickupCounts[n] += 1));
+        this.selectedItem = recipeEntry.item;
       }
     },
 
@@ -133,17 +182,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style>
-body {
-  background: lightgray;
-}
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>

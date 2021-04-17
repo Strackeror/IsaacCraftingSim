@@ -1,8 +1,6 @@
 <template>
-  <div style="display: flex; background: #999; padding-top:20px">
-    <div
-      style="overflow-y:auto; padding-left:20px; height:90vh; width: 30vw; display: flex; flex-wrap: wrap; align-content: flex-start"
-    >
+  <div style="display: flex; flex: 1">
+    <div class="itemListPanel">
       <div
         class="item"
         v-for="(value, id) in itemRecipeMap"
@@ -20,10 +18,7 @@
         />
       </div>
     </div>
-    <div
-      class="shownRecipePanel"
-      style="overflow-y:auto; padding-left:20px; height:90vh; width: 150px"
-    >
+    <div class="shownRecipePanel">
       <div v-if="shownItem">
         {{ items[shownItem].name }}
       </div>
@@ -52,13 +47,30 @@
 </template>
 
 <style>
-.shownRecipePanel {
+.itemListPanel {
+  padding-left: 10px;
+  padding-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  flex: 1;
   height: 90vh;
+  overflow: auto;
+  border: 5px solid gray;
+  border-right: 0;
+}
+
+.shownRecipePanel {
+  padding-top: 10px;
   overflow-y: auto;
-  padding-left: 20px;
   width: 150px;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  flex: 0 0 auto;
+  height: 90vh;
+  border: 5px solid gray;
+  border-right: 0;
 }
 
 .shownRecipeEntry {
@@ -71,11 +83,11 @@
 }
 
 .shownRecipe:hover {
-  background: lightgray;
+  background: #6a6;
 }
 
 .item:hover {
-  background: lightgray;
+  background: #6a6;
 }
 
 .item {
@@ -99,27 +111,27 @@ export default defineComponent({
   props: {
     pickupCounts: Object as PropType<{ [n: number]: number }>,
     pickupsInBag: Object as PropType<number[]>,
+    selectedItem: Number,
   },
 
   data() {
     return {
-      selectedItem: 0,
       hoveredItem: 0,
     };
   },
 
-  emits: ["recipeClicked"],
+  emits: ["recipeClicked", "update:selectedItem"],
 
   methods: {
-    selectItem(id: number) {
-      this.selectedItem = this.selectedItem == id ? 0 : id;
+    selectItem(id: string) {
+      this.$emit("update:selectedItem", +id);
     },
 
     itemBorderColor(id: number) {
       if (this.selectedItem == id) {
         return "green";
       }
-      return "darkgray";
+      return "lightgray";
     },
 
     recipeClicked(recipe: number[], item: number) {
@@ -154,7 +166,9 @@ export default defineComponent({
 
     shownItem(): number {
       if (this.hoveredItem) return this.hoveredItem;
-      if (this.selectedItem in this.itemRecipeMap) return this.selectedItem;
+      if (this.selectedItem && this.selectedItem in this.itemRecipeMap) {
+        return this.selectedItem;
+      }
       return 0;
     },
 

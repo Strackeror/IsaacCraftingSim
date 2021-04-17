@@ -1,5 +1,8 @@
 <template>
-  <div style="display: flex; flex-direction: column; padding-left:5px">
+  <div
+    style="display: flex; flex-direction: column; padding-left:5px; align-items:center"
+    @wheel.prevent="mouseWheel($event)"
+  >
     <div class="pickupIcon">
       <pickup-icon v-bind:idx="idx" @pickupClicked="addBag" />
     </div>
@@ -34,6 +37,14 @@ export default defineComponent({
     addBag() {
       this.$emit("addBag", this.idx ?? 0);
     },
+
+    mouseWheel(event: WheelEvent) {
+      if (event.deltaY > 0) {
+        this.inputCount -= 1;
+      } else if (event.deltaY < 0) {
+        this.inputCount += 1;
+      }
+    },
   },
 
   computed: {
@@ -42,7 +53,9 @@ export default defineComponent({
         return this.count ?? 0;
       },
       set(value: number) {
-        this.$emit("update:count", value);
+        if (value >= 0) {
+          this.$emit("update:count", value);
+        }
       },
     },
   },

@@ -1,7 +1,6 @@
 <template>
   <div class="panel">
     History
-    <button v-if="recipeHistory.length" @click="clear">Clear</button>
     <div class="recipeList">
       <div
         v-for="recipeEntry in recipeHistory"
@@ -20,6 +19,28 @@
     <button v-if="recipeHistory.length" @click="undo">Undo</button>
   </div>
 </template>
+
+<style scoped>
+.panel {
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+  border: 5px solid gray;
+  align-items: center;
+  flex-shrink: 0;
+}
+.recipeList {
+  display: flex;
+  flex-direction: column;
+}
+
+.recipeEntry {
+  background: gray;
+  display: flex;
+  border-top: 5px solid lightgray;
+  align-self: center;
+}
+</style>
 
 <script lang="ts">
 import { defineComponent, PropType } from "vue";
@@ -59,25 +80,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style scoped>
-.panel {
-  display: flex;
-  flex-direction: column;
-  align-content: center;
-  width: 200px;
-  border: 5px solid #999;
-}
-.recipeList {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-}
-
-.recipeEntry {
-  background: gray;
-  display: flex;
-  padding-top: 5px;
-  align-self: center;
-}
-</style>
