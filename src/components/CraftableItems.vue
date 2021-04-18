@@ -10,12 +10,7 @@
         @click="selectItem(id)"
         :style="getItemStyle(id)"
       >
-        <img
-          :src="`./collectibles/${items[id].img}`"
-          style="image-rendering: crisp-edges"
-          height="64"
-          width="64"
-        />
+        <img :src="`./collectibles/${items[id].img}`" height="64" width="64" />
       </div>
     </div>
     <div class="shownRecipePanel">
@@ -25,7 +20,6 @@
       <div v-if="shownItem">
         <img
           :src="`./collectibles/${items[shownItem].img}`"
-          style="image-rendering: crisp-edges"
           height="64"
           width="64"
         />

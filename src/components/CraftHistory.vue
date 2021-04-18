@@ -9,7 +9,6 @@
       >
         <img
           :src="`./collectibles/${items[recipeEntry.item].img}`"
-          style="image-rendering: crisp-edges"
           height="64"
           width="64"
         />

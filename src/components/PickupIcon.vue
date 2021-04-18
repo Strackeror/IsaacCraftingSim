@@ -1,39 +1,56 @@
 <template>
-  <div v-bind:style="pickupIconStyle" @click="pickupClicked"></div>
+  <div
+    class="pickupIcon"
+    v-bind:style="pickupIconStyle"
+    @click="pickupClicked"
+  ></div>
 </template>
 
+<style scoped>
+.pickupIcon {
+  background-image: url("../assets/ui_crafting.png");
+  width: 32px;
+  height: 32px;
+  background-size: 256px;
+}
+</style>
+
 <script lang="ts">
-import { defineComponent, watch } from 'vue';
+import { defineComponent, watch } from "vue";
+
+const offsets: string[] = [];
+for (let i = 0; i < 32; ++i) {
+  const x = i % 8;
+  const y = Math.floor(i / 8);
+  offsets.push(`-${x * 32}px -${y * 32}px`);
+}
 
 export default defineComponent({
-  name: 'PickupIcon',
+  name: "PickupIcon",
   props: {
-    idx: Number
+    idx: Number,
   },
 
-  emits: ['pickupClicked'],
+  data() {
+    return {
+      offsets,
+    };
+  },
+
+  emits: ["pickupClicked"],
 
   methods: {
     pickupClicked() {
       this.$emit("pickupClicked");
-    }
-
+    },
   },
 
   computed: {
     pickupIconStyle(): any {
-      let val = this.idx ?? 0;
-      let x = val % 8, y = Math.floor(val / 8);
-      let backgroundPosition = `-${x * 32}px -${y * 32}px`;
       return {
-          imageRendering: "crisp-edges",
-          backgroundImage: `url(${require('@/assets/ui_crafting.png')})`,
-          width: "32px",
-          height: "32px",
-          backgroundSize: "256px",
-          backgroundPosition,
-      }
-    }
-  }
+        backgroundPosition: this.offsets[this.idx ?? 0],
+      };
+    },
+  },
 });
 </script>

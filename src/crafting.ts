@@ -282,12 +282,22 @@ function getQualityBounds(
   return [0, 0];
 }
 
+const recipeCache: Map<string, number> = new Map();
+
+function recipeToString(recipe: number[]): string {
+  return String.fromCharCode(...recipe);
+}
+
 export function craftItem(recipe: number[]): number {
   if (recipe.length != 8) {
     return 0;
   }
 
   const sortedRecipe = [...recipe].sort((a, b) => a - b);
+  const cached = recipeCache.get(recipeToString(sortedRecipe));
+  if (cached) {
+    return cached;
+  }
 
   let seed = 0x77777770;
   for (const pickupId of sortedRecipe) {
@@ -319,6 +329,7 @@ export function craftItem(recipe: number[]): number {
     const weight = itemWeights[id];
     target -= weight;
     if (target < 0) {
+      recipeCache.set(recipeToString(sortedRecipe), +id);
       return +id;
     }
   }

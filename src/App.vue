@@ -85,6 +85,8 @@
 
 body {
   background: lightgray;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
 }
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;

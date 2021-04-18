@@ -64,6 +64,6 @@ export default defineComponent({
 
 <style scoped>
 .pickupIcon:hover {
-  background: gray;
+  background-color: gray;
 }
 </style>
